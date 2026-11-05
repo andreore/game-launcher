@@ -1,0 +1,65 @@
+name: Сборка лаунчера
+
+# Собираем по тегу вида v0.1.0 и вручную из вкладки Actions.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+# Чтобы сборка могла создать релиз и приложить к нему файлы.
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Ветка Windows собирается на настоящей Windows: кросс-сборка
+          # виндовых установщиков с Linux не поддерживается.
+          - name: Windows
+            os: windows-latest
+          - name: Linux
+            os: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Библиотеки для окна
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Зависимости интерфейса
+        run: npm ci
+
+      - name: Сборка и публикация
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        with:
+          tagName: v__VERSION__
+          releaseName: "Лаунчер v__VERSION__"
+          releaseBody: |
+            Скачай файл для своей системы:
+            Windows — .exe или .msi, Linux — AppImage, .deb или .rpm.
+            Рядом лежат файлы .sig — они нужны лаунчеру для обновлений, руками их скачивать не надо.
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true
