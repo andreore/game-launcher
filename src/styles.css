@@ -1,0 +1,1252 @@
+/* ------------------------------------------------------------------
+   Лаунчер: оформление
+
+   Раскладка повторяет лаунчер Minecraft: тёмная панель слева, светлая
+   область с игрой и новостями справа. Тема переключается атрибутом
+   data-theme на корне — переменные ниже задают оба варианта.
+   ------------------------------------------------------------------ */
+
+:root {
+  --radius: 4px;
+  --radius-lg: 6px;
+  --sidebar-width: 210px;
+
+  --accent: #3c8527;
+  --accent-hover: #479730;
+  --accent-press: #327020;
+
+  font-family:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="light"] {
+  --sidebar-bg: #212121;
+  --sidebar-text: #f2f2f2;
+  --sidebar-dim: #a3a3a3;
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-active: rgba(255, 255, 255, 0.15);
+
+  /* Фон заметно серее карточек: белое на белом читается плохо. */
+  --bg: #ececec;
+  --card: #ffffff;
+  --text: #1c1c1c;
+  --text-dim: #55585c;
+  --border: #cfcfcf;
+  --border-strong: #b4b4b4;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  --warn-bg: #fff6e0;
+  --warn-border: #e5c368;
+  --warn-text: #74540d;
+  --danger: #b3261e;
+  --scroll: rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme="dark"] {
+  /* Панель темнее основной области, иначе граница между ними пропадает. */
+  --sidebar-bg: #161616;
+  --sidebar-text: #f2f2f2;
+  --sidebar-dim: #9c9c9c;
+  --sidebar-hover: rgba(255, 255, 255, 0.07);
+  --sidebar-active: rgba(255, 255, 255, 0.14);
+
+  --bg: #2e2e2e;
+  --card: #3c3c3c;
+  --text: #f2f2f2;
+  --text-dim: #b8b8b8;
+  --border: #474747;
+  --border-strong: #5c5c5c;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+
+  --warn-bg: #3a3218;
+  --warn-border: #6d5a20;
+  --warn-text: #ffd694;
+  --danger: #ff8f8f;
+  --scroll: rgba(255, 255, 255, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Классы вида `.game-list { display: flex }` перебивают стандартное скрытие
+   по атрибуту hidden — поэтому правило с !important. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  background: var(--bg);
+  color: var(--text);
+  /* Это окно программы, а не страница: выделять текст везде незачем. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: rgba(60, 133, 39, 0.35);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- панель слева ---------- */
+
+.sidebar {
+  flex: 0 0 var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.account:hover {
+  background: var(--sidebar-hover);
+}
+
+.account-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--sidebar-active);
+  color: var(--sidebar-dim);
+}
+
+.account-avatar svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.account-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.account-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-role {
+  font-size: 12px;
+  color: var(--sidebar-dim);
+}
+
+.preview-chip {
+  align-self: flex-start;
+  margin: 2px 12px 0;
+  padding: 2px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: var(--sidebar-dim);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sidebar-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 10px 6px 12px;
+}
+
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sidebar-dim);
+}
+
+.game-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+  overflow-y: auto;
+}
+
+.sidebar-note {
+  margin: 0;
+  padding: 4px 12px;
+  font-size: 12.5px;
+  color: var(--sidebar-dim);
+}
+
+.game-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.game-row:hover {
+  background: var(--sidebar-hover);
+}
+
+.game-row[aria-pressed="true"] {
+  background: var(--sidebar-active);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.game-row-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+  overflow: hidden;
+  /* Заглушка для игры без обложки: светлее фона, чтобы строка читалась. */
+  background: linear-gradient(
+    155deg,
+    hsla(var(--hue, 230), 55%, 42%, 1),
+    hsla(calc(var(--hue, 230) + 40), 45%, 24%, 1)
+  );
+}
+
+.game-row-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-row-letter {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.game-row-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.game-row-title {
+  font-size: 13px;
+  color: var(--sidebar-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-row-version {
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--sidebar-dim);
+  opacity: 0.8;
+}
+
+.game-row[aria-pressed="true"] .game-row-title {
+  color: var(--sidebar-text);
+}
+
+/* На подсвеченном фоне строка версии тускнеет, поэтому в выбранной игре
+   показываем её светлее. */
+.game-row[aria-pressed="true"] .game-row-version {
+  color: var(--sidebar-text);
+  opacity: 0.75;
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--sidebar-dim);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.settings-button:hover {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-text);
+}
+
+.settings-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- правая часть ---------- */
+
+.main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 22px;
+  overflow-y: auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.search {
+  flex: 1 1 auto;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.search:focus-within {
+  border-color: var(--accent);
+}
+
+.search-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.search input::placeholder {
+  color: var(--text-dim);
+}
+
+.search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.counter {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* ---------- разделы ---------- */
+
+.view-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.view-tab {
+  padding: 7px 13px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.view-tab:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.view-tab[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* Поиск и счётчик относятся к своим играм: в каталоге они не нужны. */
+.main[data-view="catalog"] .search,
+.main[data-view="catalog"] .counter {
+  display: none;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.icon-button:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.icon-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-button.small {
+  width: 26px;
+  height: 26px;
+  border-color: transparent;
+}
+
+.icon-button.small svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* В тёмной панели слева кнопки должны читаться на тёмном. */
+.sidebar-heading-row .icon-button {
+  color: var(--sidebar-dim);
+}
+
+.sidebar-heading-row .icon-button:hover {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-text);
+}
+
+.problems {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px 9px 12px;
+  border: 1px solid var(--warn-border);
+  border-radius: var(--radius);
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  font-size: 13px;
+}
+
+.problems-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.problems-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.problems .icon-button.small {
+  color: currentColor;
+}
+
+/* ---------- сама игра ---------- */
+
+.game-panel {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 290px;
+  display: flex;
+  align-items: flex-end;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #101418;
+  overflow: hidden;
+}
+
+.game-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      130% 150% at 6% -10%,
+      hsla(var(--hue, 230), 65%, 38%, 0.75),
+      transparent 62%
+    ),
+    radial-gradient(
+      100% 130% at 92% 108%,
+      hsla(calc(var(--hue, 230) + 55), 55%, 32%, 0.6),
+      transparent 65%
+    );
+}
+
+.game-art {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  filter: blur(22px) saturate(1.15);
+  opacity: 0.6;
+}
+
+.game-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(12, 14, 18, 0.94) 0%,
+      rgba(12, 14, 18, 0.74) 45%,
+      rgba(12, 14, 18, 0.3) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(12, 14, 18, 0.2) 0%,
+      rgba(12, 14, 18, 0.1) 45%,
+      rgba(12, 14, 18, 0.9) 100%
+    );
+}
+
+.game-info {
+  position: relative;
+  max-width: 640px;
+}
+
+.game-eyebrow {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-title {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  line-height: 1.12;
+  color: #ffffff;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.game-description {
+  margin: 10px 0 0;
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.86);
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* Кнопка «играть» — широкая зелёная плита с фаской, как в лаунчере Minecraft. */
+.play-button {
+  padding: 13px 34px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+  transition:
+    background-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.play-button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.play-button:active:not(:disabled) {
+  background: var(--accent-press);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.play-button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.button.danger {
+  border-color: #b3261e;
+  background: #b3261e;
+  color: #ffffff;
+}
+
+.button.danger:hover:not(:disabled) {
+  border-color: #9c1f18;
+  background: #9c1f18;
+}
+
+/* На обложке игры кнопка удаления светлая, но с красным оттенком. */
+.game-actions .button.danger {
+  border-color: rgba(255, 150, 150, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffd2d2;
+}
+
+.game-actions .button.danger:hover {
+  border-color: rgba(255, 150, 150, 0.8);
+  background: rgba(255, 110, 110, 0.2);
+}
+
+/* На обложке игры обычная кнопка не видна — здесь она светлая. */
+.game-actions .button {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.game-actions .button:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+code {
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ---------- каталог игр лаунчера ---------- */
+
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.catalog-note {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.catalog-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+  gap: 12px;
+}
+
+.catalog-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.catalog-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(
+    155deg,
+    hsla(var(--hue, 230), 55%, 42%, 1),
+    hsla(calc(var(--hue, 230) + 40), 45%, 24%, 1)
+  );
+  overflow: hidden;
+}
+
+.catalog-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.catalog-letter {
+  font-size: 34px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.catalog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  padding: 12px;
+}
+
+.catalog-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.catalog-meta {
+  margin: 0;
+  min-height: 1em;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.catalog-text {
+  margin: 0;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.catalog-install {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ---------- новости ---------- */
+
+.news {
+  /* Новости всегда прижаты к низу окна, под ними ничего нет. */
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.news-heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.news-list {
+  display: grid;
+  /* Ширина подобрана так, чтобы три карточки вставали в строку при окне
+     1000 px: при большей третья уезжала во второй ряд и появлялась прокрутка. */
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 10px;
+}
+
+.news-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.news-date {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.news-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.news-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-hint {
+  margin: 0;
+  max-width: 620px;
+  padding: 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---------- настройки ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.overlay.centre {
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 390px;
+  max-width: 100%;
+  height: 100%;
+  padding: 18px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  width: 100%;
+}
+
+.field-label {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.field-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.field-input:focus {
+  border-color: var(--accent);
+}
+
+.field-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.check input:disabled {
+  cursor: default;
+}
+
+.theme-row {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-button {
+  padding: 9px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.theme-button:hover {
+  border-color: var(--border-strong);
+}
+
+.theme-button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.path {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.example summary {
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.example pre {
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-size: 11.5px;
+  line-height: 1.5;
+  overflow-x: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.settings-version {
+  margin: auto 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ---------- окно новой игры ---------- */
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 420px;
+  max-width: calc(100% - 32px);
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.dialog-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.dialog-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+/* ---------- сообщения ---------- */
+
+.toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  max-width: 440px;
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
+  animation: toast-in 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.toast.error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.toast.leaving {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ---------- узкое окно ---------- */
+
+@media (max-width: 880px) {
+  :root {
+    --sidebar-width: 186px;
+  }
+
+  .main {
+    padding: 12px 12px 18px;
+  }
+
+  .game-panel,
+  .empty {
+    padding: 18px;
+  }
+
+  .play-button {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "games": [
+    {
+      "id": "snake",
+      "title": "Змейка",
+      "version": "0.3.0",
+      "author": "мы с друзьями",
+      "description": "Классика про растущую змею. Режим на двоих за одной клавиатурой.",
+      "size": 48200000,
+      "cover": "https://example.com/launcher/snake.png",
+      "url": "https://github.com/ВАШ-ЛОГИН/ВАШ-РЕПОЗИТОРИЙ/releases/download/v1/snake.zip"
+    },
+    {
+      "id": "tanks",
+      "title": "Танчики во дворе",
+      "version": "1.2.0",
+      "author": "Саня",
+      "description": "Пять уровней, ломаемые кирпичные стены и кооп на двоих.",
+      "size": 132000000,
+      "url": "https://github.com/ВАШ-ЛОГИН/ВАШ-РЕПОЗИТОРИЙ/releases/download/v1/tanks.zip"
+    }
+  ]
+}

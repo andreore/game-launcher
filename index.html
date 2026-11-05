@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лаунчер</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <!-- Левая панель: аккаунт, список игр, настройки -->
+    <aside class="sidebar">
+      <button
+        id="account"
+        class="account"
+        type="button"
+        title="Аккаунты появятся позже"
+      >
+        <span class="account-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </span>
+        <span class="account-text">
+          <span class="account-name">Аккаунт лаунчера</span>
+          <span id="account-role" class="account-role">не выбран</span>
+        </span>
+      </button>
+
+      <div class="sidebar-heading-row">
+        <span class="sidebar-heading">Игры</span>
+        <button
+          id="add-game"
+          class="icon-button small"
+          type="button"
+          title="Добавить игру"
+          aria-label="Добавить игру"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="game-list" class="game-list"></div>
+      <p id="game-list-empty" class="sidebar-note" hidden>Ни одной игры</p>
+
+      <button id="open-settings" class="settings-button" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+          />
+        </svg>
+        Настройки
+      </button>
+    </aside>
+
+    <!-- Правая часть: выбранная игра и новости -->
+    <main class="main">
+      <header class="topbar">
+        <nav class="view-tabs" aria-label="Разделы лаунчера">
+          <button
+            id="view-library"
+            class="view-tab"
+            type="button"
+            data-view="library"
+            aria-pressed="true"
+          >
+            Мои игры
+          </button>
+          <button
+            id="view-catalog"
+            class="view-tab"
+            type="button"
+            data-view="catalog"
+            aria-pressed="false"
+          >
+            Каталог
+          </button>
+        </nav>
+
+        <label class="search">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7.5" />
+            <path d="M20.5 20.5 16 16" />
+          </svg>
+          <input
+            id="search"
+            type="search"
+            placeholder="Найти игру"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Поиск игры"
+          />
+        </label>
+
+        <span id="counter" class="counter"></span>
+
+        <button
+          id="open-directory"
+          class="icon-button"
+          type="button"
+          title="Открыть папку игр"
+          aria-label="Открыть папку игр"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+            />
+          </svg>
+        </button>
+        <button
+          id="refresh"
+          class="icon-button"
+          type="button"
+          title="Обновить список (F5)"
+          aria-label="Обновить список"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        </button>
+      </header>
+
+      <div id="problems" class="problems" hidden>
+        <svg class="problems-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+        </svg>
+        <span id="problems-text" class="problems-text"></span>
+        <button
+          id="problems-close"
+          class="icon-button small"
+          type="button"
+          aria-label="Скрыть предупреждение"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Сама игра -->
+      <section id="game-panel" class="game-panel" hidden>
+        <div class="game-backdrop" aria-hidden="true">
+          <img id="game-art" class="game-art" alt="" hidden />
+        </div>
+        <div class="game-scrim" aria-hidden="true"></div>
+
+        <div class="game-info">
+          <p id="game-eyebrow" class="game-eyebrow"></p>
+          <h1 id="game-title" class="game-title"></h1>
+          <p id="game-description" class="game-description"></p>
+          <ul id="game-tags" class="chips"></ul>
+
+          <div class="game-actions">
+            <button id="play" class="play-button" type="button">Играть</button>
+            <button id="open-game-directory" class="button" type="button">
+              Папка игры
+            </button>
+            <button id="delete-game" class="button danger" type="button">
+              Удалить
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Каталог игр лаунчера -->
+      <section id="catalog" class="catalog" hidden>
+        <p id="catalog-note" class="catalog-note" hidden></p>
+        <div id="catalog-list" class="catalog-list"></div>
+      </section>
+
+      <!-- Новости лаунчера -->
+      <section class="news">
+        <h2 class="news-heading">Новости лаунчера</h2>
+        <div id="news-list" class="news-list"></div>
+        <p id="news-hint" class="news-hint" hidden>Новостей пока нет.</p>
+      </section>
+    </main>
+
+    <!-- Настройки -->
+    <div id="settings-overlay" class="overlay" hidden>
+      <aside
+        id="settings-panel"
+        class="settings-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+      >
+        <header class="settings-head">
+          <h2 id="settings-title">Настройки</h2>
+          <button
+            id="settings-close"
+            class="icon-button small"
+            type="button"
+            aria-label="Закрыть настройки"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="field">
+          <span class="field-label">Тема оформления</span>
+          <div class="theme-row">
+            <button
+              id="theme-light"
+              class="theme-button"
+              type="button"
+              data-theme="light"
+            >
+              Светлая
+            </button>
+            <button
+              id="theme-dark"
+              class="theme-button"
+              type="button"
+              data-theme="dark"
+            >
+              Тёмная
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="check">
+            <input id="close-on-launch" type="checkbox" />
+            <span>Закрывать лаунчер при запуске игры</span>
+          </label>
+          <p class="field-note">
+            Игра работает отдельным процессом, поэтому окно лаунчера ей не нужно.
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="check">
+            <input id="auto-update" type="checkbox" />
+            <span>Проверять обновления лаунчера при запуске</span>
+          </label>
+          <button id="launcher-update-check" class="button" type="button">
+            Проверить обновление
+          </button>
+          <p id="launcher-update-note" class="field-note" hidden></p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Каталог игр</span>
+          <input
+            id="settings-catalog-url"
+            class="field-input"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="https://…/catalog.json"
+          />
+          <p class="field-note">
+            Адрес файла со списком игр, которые можно скачать. Пока он пуст,
+            вкладка «Каталог» будет говорить, что каталог не настроен.
+          </p>
+          <button id="settings-catalog-check" class="button" type="button">
+            Проверить и обновить
+          </button>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Папка игр</span>
+          <code id="settings-games-path" class="path"></code>
+          <button id="settings-open-games" class="button" type="button">
+            Открыть папку
+          </button>
+        </div>
+
+        <p class="settings-version">Версия <span id="settings-version"></span></p>
+      </aside>
+    </div>
+
+    <!-- Новая игра -->
+    <div id="create-overlay" class="overlay centre" hidden>
+      <section
+        id="create-dialog"
+        class="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-heading"
+      >
+        <h2 id="create-heading" class="dialog-title">Новая игра</h2>
+        <p class="dialog-text">
+          Лаунчер создаст папку и файл <code>game.json</code>, а потом откроет
+          её, чтобы туда можно было положить саму игру.
+        </p>
+
+        <label class="field">
+          <span class="field-label">Как называется игра</span>
+          <input
+            id="create-title-input"
+            class="field-input"
+            type="text"
+            maxlength="60"
+            autocomplete="off"
+            placeholder="Змейка"
+          />
+        </label>
+
+        <div class="field">
+          <span class="field-label">Файл игры</span>
+          <button id="create-pick" class="button" type="button">
+            Выбрать файл…
+          </button>
+          <p id="create-file-note" class="field-note">Файл не выбран.</p>
+        </div>
+
+        <p id="create-error" class="dialog-error" hidden></p>
+
+        <div class="dialog-actions">
+          <button id="create-cancel" class="button" type="button">Отмена</button>
+          <button id="create-submit" class="play-button" type="button">
+            Создать
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Удаление игры -->
+    <div id="delete-overlay" class="overlay centre" hidden>
+      <section
+        id="delete-dialog"
+        class="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-heading"
+      >
+        <h2 id="delete-heading" class="dialog-title">Удалить игру?</h2>
+        <p class="dialog-text">
+          Папка <code id="delete-path"></code> и всё, что в ней лежит, исчезнут
+          с диска. Вернуть их будет нельзя.
+        </p>
+        <div class="dialog-actions">
+          <button id="delete-cancel" class="button" type="button">Отмена</button>
+          <button id="delete-confirm" class="button danger" type="button">
+            Удалить
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+  </body>
+</html>

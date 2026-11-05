@@ -1,0 +1,15 @@
+[package]
+name = "launcher-core"
+version = "0.1.0"
+edition = "2024"
+description = "Логика лаунчера: манифесты игр, обход папки с играми, запуск процессов"
+license = "MIT"
+
+[dependencies]
+base64 = "0.22"
+# Скачивание игр из каталога.
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+zip = "2"
