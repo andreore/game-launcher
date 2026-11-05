@@ -140,29 +140,40 @@ function render(reveal = false): void {
 }
 
 async function load(): Promise<void> {
-  try {
-    const [report, news, loaded, launcher] = await Promise.all([
-      api.listGames(),
-      api.listNews(),
-      api.loadSettings(),
-      api.launcherInfo(),
-    ]);
+  // Каждую часть берём отдельно: если не открылась папка игр, настройки и тема
+  // всё равно должны работать. Раньше одна ошибка выключала весь лаунчер.
+  const [report, news, loaded, launcher] = await Promise.allSettled([
+    api.listGames(),
+    api.listNews(),
+    api.loadSettings(),
+    api.launcherInfo(),
+  ]);
 
-    games = report.games;
-    info = launcher;
-    settings = loaded;
+  if (launcher.status === "fulfilled") info = launcher.value;
+
+  if (loaded.status === "fulfilled") {
+    settings = loaded.value;
     applyTheme(settings.theme);
-
-    if (!games.some((game) => game.id === selectedId)) {
-      selectedId = games.length > 0 ? games[0].id : null;
-    }
-
-    renderNews(news);
-    showProblems(report.problems);
-    render();
-  } catch (error) {
-    toast(`Папку игр прочитать не получилось: ${String(error)}`, "error");
   }
+
+  if (news.status === "fulfilled") renderNews(news.value);
+
+  if (report.status === "fulfilled") {
+    games = report.value.games;
+    showProblems(report.value.problems);
+  } else {
+    games = [];
+    toast(
+      `Папку игр прочитать не получилось: ${String(report.reason)}. Настройки и каталог работают, папку можно сменить в настройках.`,
+      "error",
+    );
+  }
+
+  if (!games.some((game) => game.id === selectedId)) {
+    selectedId = games.length > 0 ? games[0].id : null;
+  }
+
+  render();
 }
 
 function select(id: string): void {
@@ -450,10 +461,22 @@ async function saveSettings(next: Partial<Settings>): Promise<void> {
   }
 }
 
+/** Если о лаунчере ничего узнать не удалось, показываем прочерки. */
+function fallbackInfo(): LauncherInfo {
+  return {
+    version: "неизвестно",
+    gamesDirectory: "неизвестно",
+    newsFile: "",
+    settingsFile: "",
+    newsExample: "",
+  };
+}
+
 async function openSettingsPanel(): Promise<void> {
-  if (!info) return;
   try {
-    showSettings(info, settings);
+    // Настройки открываем всегда: даже без данных о лаунчере должно быть
+    // куда зайти и что переключить.
+    showSettings(info ?? fallbackInfo(), settings);
   } catch (error) {
     toast(`Настройки не открылись: ${String(error)}`, "error");
   }

@@ -3,14 +3,14 @@
 //! Никакой логики здесь нет — она в крейте `launcher-core`. Этот файл только
 //! связывает её с окном.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use launcher_core::news::NewsItem;
 use launcher_core::{
     Catalog, CatalogError, CatalogGame, GameLibrary, InstalledGame, LaunchAction, ScanReport,
     Settings, Theme, open_external,
 };
-use tauri::{Emitter, State};
+use tauri::{Emitter, Manager, State};
 use tauri_plugin_updater::UpdaterExt;
 
 /// Имя файла, в который складывается последний удачно скачанный каталог.
@@ -435,26 +435,57 @@ fn launcher_info(launcher: State<'_, Launcher>) -> LauncherInfo {
 
 /// Где искать игры и служебные файлы.
 ///
-/// В собранной программе — папка `games` рядом с исполняемым файлом, а
-/// `settings.json` и `news.json` — в самой папке программы. В режиме
-/// разработки — то же самое, но в корне проекта. Переменная окружения
-/// `GAME_LAUNCHER_GAMES_DIR` заменяет папку игр, а служебные файлы кладутся
-/// рядом с ней.
-fn resolve_directories() -> (PathBuf, PathBuf) {
-    let games = match std::env::var_os("GAME_LAUNCHER_GAMES_DIR") {
-        Some(directory) => PathBuf::from(directory),
-        None if cfg!(debug_assertions) => {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("games")
+/// В режиме разработки — корень проекта. В собранной программе — рядом с
+/// исполняемым файлом: так лаунчер можно носить на флешке. Но установленная в
+/// общие папки программа (например в `Program Files`) писать рядом с собой не
+/// имеет права, поэтому тогда переносим всё в «Документы». Иначе папка игр не
+/// создастся и лаунчер работать не сможет.
+///
+/// Переменная окружения `GAME_LAUNCHER_GAMES_DIR` заменяет папку игр, а
+/// служебные файлы кладутся рядом с ней.
+fn resolve_directories(app: &tauri::AppHandle) -> (PathBuf, PathBuf) {
+    if let Some(directory) = std::env::var_os("GAME_LAUNCHER_GAMES_DIR") {
+        let games = PathBuf::from(directory);
+        let data = games
+            .parent()
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("."));
+        return (games, data);
+    }
+
+    let base = if cfg!(debug_assertions) {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..")
+    } else {
+        let program = program_directory();
+        if is_writable(&program) {
+            program
+        } else {
+            documents_directory(app)
         }
-        None => program_directory().join("games"),
     };
 
-    let data = games
-        .parent()
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("."));
+    (base.join("games"), base)
+}
 
-    (games, data)
+/// Можно ли писать в эту папку.
+fn is_writable(directory: &Path) -> bool {
+    let probe = directory.join(".write-check");
+
+    match std::fs::write(&probe, b"") {
+        Ok(()) => {
+            let _ = std::fs::remove_file(&probe);
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+/// Папка в «Документах» для случаев, когда рядом с программой писать нельзя.
+fn documents_directory(app: &tauri::AppHandle) -> PathBuf {
+    app.path()
+        .document_dir()
+        .map(|directory| directory.join("game-launcher"))
+        .unwrap_or_else(|_| program_directory())
 }
 
 /// Папка с исполняемым файлом программы.
@@ -467,17 +498,20 @@ fn program_directory() -> PathBuf {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let (games, data) = resolve_directories();
-
     tauri::Builder::default()
         // Диалог выбора файла: имя игры выбирается мышкой, а не набирается руками.
         .plugin(tauri_plugin_dialog::init())
         // Обновление самого лаунчера и перезапуск после него.
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .manage(Launcher {
-            library: GameLibrary::new(games),
-            data_directory: data,
+        // Папки определяем здесь: для этого нужно само приложение.
+        .setup(|app| {
+            let (games, data) = resolve_directories(app.handle());
+            app.manage(Launcher {
+                library: GameLibrary::new(games),
+                data_directory: data,
+            });
+            Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             list_games,

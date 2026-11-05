@@ -1041,7 +1041,7 @@ dependencies = [
 
 [[package]]
 name = "game-launcher"
-version = "0.1.1-A"
+version = "0.1.1+A"
 dependencies = [
  "launcher-core",
  "serde",
