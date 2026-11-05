@@ -209,7 +209,7 @@ export async function createGame(title: string, executable: string): Promise<Ins
 export async function launcherInfo(): Promise<LauncherInfo> {
   if (isPreview) {
     return {
-      version: "0.1.1-A (предпросмотр)",
+      version: "0.1.1+A (предпросмотр)",
       gamesDirectory: "~/Игры/лаунчер/games",
       newsFile: "~/Игры/лаунчер/news.json",
       settingsFile: "~/Игры/лаунчер/settings.json",
