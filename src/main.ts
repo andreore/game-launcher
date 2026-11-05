@@ -398,7 +398,7 @@ async function refreshCatalog(): Promise<void> {
 /** Новая версия лаунчера, если её нашли. `null` — обновляться некуда. */
 let pendingLauncherVersion: string | null = null;
 
-async function checkLauncherUpdate(): Promise<void> {
+async function checkLauncherUpdate(quiet = false): Promise<void> {
   try {
     const version = await api.checkLauncherUpdate();
     pendingLauncherVersion = version;
@@ -414,6 +414,10 @@ async function checkLauncherUpdate(): Promise<void> {
     setLauncherUpdateButton("Проверить обновление");
   } catch (error) {
     pendingLauncherVersion = null;
+    // При запуске про неудачу молчим: файла с версией может ещё не быть,
+    // а пугать игрока ошибкой в первый же день не за что.
+    if (quiet) return;
+
     setLauncherUpdateNote(String(error));
     setLauncherUpdateButton("Проверить обновление");
   }
@@ -621,7 +625,7 @@ async function start(): Promise<void> {
   await load();
 
   // Обновления лаунчера проверяем при запуске, если это включено в настройках.
-  if (settings.autoUpdate) void checkLauncherUpdate();
+  if (settings.autoUpdate) void checkLauncherUpdate(true);
 }
 
 void start();
