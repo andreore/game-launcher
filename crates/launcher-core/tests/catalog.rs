@@ -5,7 +5,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use launcher_core::catalog::is_newer;
+use launcher_core::catalog::{is_newer, update_url_near_catalog};
 use launcher_core::install::{self, InstallError};
 use launcher_core::{Catalog, CatalogGame, GameLibrary};
 
@@ -349,8 +349,7 @@ fn update_replaces_the_installed_version() {
 }
 
 #[test]
-fn versions_compare_by_numbers_not_letters() {
-    assert!(is_newer(Some("0.10.0"), Some("0.9.0")));
+fn versions_compare_by_numbers_not_letters() {    assert!(is_newer(Some("0.10.0"), Some("0.9.0")));
     assert!(!is_newer(Some("0.9.0"), Some("0.10.0")));
     assert!(is_newer(Some("1.0.0"), Some("0.9.9")));
     assert!(is_newer(Some("2"), Some("1.9")));
@@ -361,8 +360,21 @@ fn versions_compare_by_numbers_not_letters() {
     assert!(!is_newer(Some("  "), Some("1.0.0")));
 }
 
-// ---------- распаковка ----------
+#[test]
+fn update_file_is_looked_for_in_the_latest_release() {
+    assert_eq!(
+        update_url_near_catalog(
+            "https://raw.githubusercontent.com/andreore/game-launcher/main/catalog.json"
+        )
+        .as_deref(),
+        Some("https://github.com/andreore/game-launcher/releases/latest/download/latest.json")
+    );
 
+    assert_eq!(update_url_near_catalog("https://example.com/catalog.json"), None);
+    assert_eq!(update_url_near_catalog(""), None);
+}
+
+// ---------- распаковка ----------
 #[test]
 fn unpack_puts_files_where_they_belong() {
     let temp = TempDir::new();

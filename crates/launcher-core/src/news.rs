@@ -34,18 +34,38 @@ pub struct NewsItem {
     pub date: Option<String>,
 }
 
-/// Прочитать новости. Испорченный файл — пустой список, без ошибки.
+/// Прочитать новости из файла рядом с лаунчером.
+///
+/// Это запасной вариант: обычно новости приходят по сети, из того же места,
+/// где лежит каталог, и тогда их видят все.
 pub fn load(directory: &Path) -> Vec<NewsItem> {
-    let Ok(text) = fs::read_to_string(directory.join(NEWS_FILE)) else {
-        return Vec::new();
-    };
+    fs::read_to_string(directory.join(NEWS_FILE))
+        .map(|text| parse(&text))
+        .unwrap_or_default()
+}
 
-    let items: Vec<NewsItem> = serde_json::from_str(&text).unwrap_or_default();
+/// Разобрать новости из текста: годится и для файла, и для ответа сети.
+pub fn parse(text: &str) -> Vec<NewsItem> {
+    let items: Vec<NewsItem> = serde_json::from_str(text).unwrap_or_default();
+
     items
         .into_iter()
         .filter(|item| !item.title.trim().is_empty())
         .take(MAX_ITEMS)
         .collect()
+}
+
+/// Где лежат новости: рядом с каталогом игр.
+///
+/// Адрес каталога выглядит как `.../main/catalog.json`, а новости лежат в
+/// `.../main/news.json`. Один раз настроил каталог — новости заработали сами.
+pub fn url_near_catalog(catalog_url: &str) -> Option<String> {
+    let (folder, _) = catalog_url.trim().rsplit_once('/')?;
+    if folder.is_empty() {
+        return None;
+    }
+
+    Some(format!("{folder}/{NEWS_FILE}"))
 }
 
 /// Как выглядит файл новостей — показываем в настройках, чтобы было с чего начать.

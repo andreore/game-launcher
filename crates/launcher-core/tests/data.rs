@@ -164,6 +164,21 @@ fn news_list_is_capped() {
     assert_eq!(news::load(temp.path()).len(), 12);
 }
 
+#[test]
+fn news_are_looked_for_next_to_the_catalog() {
+    assert_eq!(
+        news::url_near_catalog("https://example.com/repo/main/catalog.json").as_deref(),
+        Some("https://example.com/repo/main/news.json")
+    );
+
+    assert_eq!(
+        news::url_near_catalog("https://example.com/catalog.json").as_deref(),
+        Some("https://example.com/news.json")
+    );
+
+    assert_eq!(news::url_near_catalog("catalog.json"), None);
+}
+
 // ---------- создание игры ----------
 
 #[test]

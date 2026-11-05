@@ -20,9 +20,10 @@ dist-ssr
 games/*
 !games/README.md
 
-# Местные файлы: настройки этого компьютера и сохранённый каталог.
+# Местные файлы: настройки этого компьютера и сохранённые копии из сети.
 settings.json
 catalog.cache.json
+news.cache.json
 *.downloading
 
 # Editor directories and files

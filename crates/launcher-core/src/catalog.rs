@@ -85,6 +85,28 @@ impl Catalog {
     }
 }
 
+/// Где искать описание последней версии лаунчера.
+///
+/// Считаем из адреса каталога: каталог лежит в репозитории, а файл версии
+/// сборка кладёт в последний релиз того же репозитория. GitHub отдаёт его по
+/// постоянному адресу `releases/latest/download/latest.json`, поэтому руками
+/// обновлять ничего не нужно: выпустили новый релиз — файл уже новый.
+pub fn update_url_near_catalog(catalog_url: &str) -> Option<String> {
+    let (_, path) = catalog_url.trim().split_once("raw.githubusercontent.com/")?;
+
+    let mut parts = path.split('/');
+    let owner = parts.next()?;
+    let repository = parts.next()?;
+
+    if owner.is_empty() || repository.is_empty() {
+        return None;
+    }
+
+    Some(format!(
+        "https://github.com/{owner}/{repository}/releases/latest/download/latest.json"
+    ))
+}
+
 /// Есть ли в каталоге версия новее той, что стоит у игрока.
 ///
 /// Сравниваем по числам, если они есть: «0.10.0» новее «0.9.0», хотя строка

@@ -16,6 +16,9 @@ use tauri_plugin_updater::UpdaterExt;
 /// Имя файла, в который складывается последний удачно скачанный каталог.
 const CATALOG_CACHE: &str = "catalog.cache.json";
 
+/// Имя файла с сохранённой копией новостей.
+const NEWS_CACHE: &str = "news.cache.json";
+
 /// Состояние приложения: игры и папка с настройками и новостями.
 struct Launcher {
     library: GameLibrary,
@@ -285,9 +288,9 @@ fn read_installed(launcher: &Launcher, directory: &std::path::Path) -> Result<In
 
 /// Адрес файла с описанием последней версии лаунчера.
 ///
-/// Берём его из адреса каталога: файл `latest.json` лежит рядом с
-/// `catalog.json`. Так настраивать нечего: настроил каталог — работает и
-/// обновление.
+/// Считаем его из адреса каталога: каталог лежит в репозитории, а файл версии
+/// кладёт туда сборка вместе с релизом. Достаточно один раз настроить каталог,
+/// чтобы заработали и обновления.
 fn update_endpoint(launcher: &Launcher) -> Result<String, String> {
     let settings = Settings::load(&launcher.data_directory);
     let catalog = settings
@@ -298,12 +301,8 @@ fn update_endpoint(launcher: &Launcher) -> Result<String, String> {
             "Адрес обновлений неизвестен: сначала впиши каталог игр в настройках.".to_owned()
         })?;
 
-    let base = match catalog.rsplit_once('/') {
-        Some((folder, _)) => folder,
-        None => return Err("Адрес каталога выглядит странно.".to_owned()),
-    };
-
-    Ok(format!("{base}/latest.json"))
+    launcher_core::catalog::update_url_near_catalog(&catalog)
+        .ok_or_else(|| "Не понял, откуда брать обновления: адрес каталога не с GitHub.".to_owned())
 }
 
 /// Есть ли новая версия лаунчера. Возвращаем её номер, если есть.
@@ -355,9 +354,31 @@ async fn install_launcher_update(app: tauri::AppHandle) -> Result<(), String> {
 
 // ---------- аккаунт, новости, настройки ----------
 
-/// Новости лаунчера из `news.json`. Файла нет — пустой список.
+/// Новости лаунчера.
+///
+/// Берём их оттуда же, откуда каталог игр: тогда новость видит каждый, у кого
+/// стоит лаунчер. Нет сети — показываем сохранённую копию, нет и её — читаем
+/// файл рядом с лаунчером.
 #[tauri::command]
 fn list_news(launcher: State<'_, Launcher>) -> Vec<NewsItem> {
+    let settings = Settings::load(&launcher.data_directory);
+    let cache = launcher.data_directory.join(NEWS_CACHE);
+
+    if let Some(url) = settings
+        .catalog_url
+        .as_deref()
+        .and_then(launcher_core::news::url_near_catalog)
+    {
+        if let Ok(text) = launcher_core::install::fetch_text(&url) {
+            let _ = std::fs::write(&cache, &text);
+            return launcher_core::news::parse(&text);
+        }
+
+        if let Ok(text) = std::fs::read_to_string(&cache) {
+            return launcher_core::news::parse(&text);
+        }
+    }
+
     launcher_core::news::load(&launcher.data_directory)
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "game-launcher"
-version = "0.1.0"
+version = "0.1.1-A"
 description = "Лаунчер для наших игр"
 authors = ["мы"]
 edition = "2024"
